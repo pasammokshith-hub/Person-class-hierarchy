@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Person Hierarchy</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, select, button {
+      padding: 6px 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .list {
+      margin-top: 20px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px 0;
+      background: #fafafa;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .actions button {
+      margin-left: 5px;
+      background: #28a745;
+    }
+    .actions button.remove {
+      background: #dc3545;
+    }
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background: #fffbe6;
+      border-radius: 5px;
+      min-height: 50px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Person Hierarchy App</h1>
+
+    <h3>Add Person</h3>
+    <select id="type">
+      <option value="Person">Person</option>
+      <option value="Student">Student</option>
+      <option value="Teacher">Teacher</option>
+    </select>
+    <input type="text" id="name" placeholder="Enter name">
+    <input type="number" id="age" placeholder="Enter age">
+    <button onclick="addPerson()">Add</button>
+
+    <div class="list" id="personList"></div>
+
+    <h3>Output Log</h3>
+    <div class="log" id="log"></div>
+  </div>
+
+  <script>
+    // Base class
+    class Person {
+      constructor(name, age) {
+        this.name = name;
+        this.age = age;
+      }
+      introduce() {
+        return `Hi, I am ${this.name}, ${this.age} years old.`;
+      }
+    }
+
+    // Student subclass
+    class Student extends Person {
+      study() {
+        return `${this.name} is studying.`;
+      }
+    }
+
+    // Teacher subclass
+    class Teacher extends Person {
+      teach() {
+        return `${this.name} is teaching.`;
+      }
+    }
+
+    const people = [];
+
+    function addPerson() {
+      const type = document.getElementById('type').value;
+      const name = document.getElementById('name').value.trim();
+      const age = document.getElementById('age').value.trim();
+      if (!name || !age) {
+        log("Please enter name and age.");
+        return;
+      }
+
+      let person;
+      if (type === "Student") {
+        person = new Student(name, age);
+      } else if (type === "Teacher") {
+        person = new Teacher(name, age);
+      } else {
+        person = new Person(name, age);
+      }
+
+      people.push(person);
+      renderList();
+      log(`${type} ${name} added.`);
+      document.getElementById('name').value = "";
+      document.getElementById('age').value = "";
+    }
+
+    function removePerson(index) {
+      log(`${people[index].name} removed.`);
+      people.splice(index, 1);
+      renderList();
+    }
+
+    function action(index, actionType) {
+      let person = people[index];
+      if (actionType === "introduce") {
+        log(person.introduce());
+      } else if (actionType === "study" && person instanceof Student) {
+        log(person.study());
+      } else if (actionType === "teach" && person instanceof Teacher) {
+        log(person.teach());
+      } else {
+        log("Action not available.");
+      }
+    }
+
+    function renderList() {
+      const list = document.getElementById('personList');
+      list.innerHTML = "";
+      people.forEach((p, index) => {
+        const div = document.createElement("div");
+        div.className = "card";
+        div.innerHTML = `
+          <span><b>${p.constructor.name}</b>: ${p.name} (${p.age})</span>
+          <div class="actions">
+            <button onclick="action(${index}, 'introduce')">Introduce</button>
+            ${p instanceof Student ? `<button onclick="action(${index}, 'study')">Study</button>` : ""}
+            ${p instanceof Teacher ? `<button onclick="action(${index}, 'teach')">Teach</button>` : ""}
+            <button class="remove" onclick="removePerson(${index})">Remove</button>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function log(message) {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML += `<div>${message}</div>`;
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+  </script>
+</body>
+</html>
